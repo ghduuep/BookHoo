@@ -8,6 +8,8 @@ import br.com.bookhoo.BookHoo.model.Acomodacao;
 import br.com.bookhoo.BookHoo.service.AcomodacaoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,28 +22,31 @@ public class AcomodacaoController {
     private AcomodacaoService service;
 
     @GetMapping
-    public List<AcomodacaoListagemDTO> listarTodos() {
+    public ResponseEntity<List<AcomodacaoListagemDTO>> listarTodos() {
         List<Acomodacao> acomodacaos = service.listar();
-        return acomodacaos.stream()
+        List<AcomodacaoListagemDTO> acomodacoesDTO = acomodacaos.stream()
                 .map(AcomodacaoListagemDTO::new)
                 .toList();
+        return ResponseEntity.ok(acomodacoesDTO);
     }
 
     @GetMapping("/{id}")
-    public AcomodacaoListagemDTO buscarPorId(@PathVariable Long id) throws Exception {
+    public ResponseEntity<AcomodacaoListagemDTO> buscarPorId(@PathVariable Long id) throws Exception {
         var acomodacao = service.buscarPorId(id).orElseThrow();
-        return new AcomodacaoListagemDTO(acomodacao);
+        var dto = new AcomodacaoListagemDTO(acomodacao);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
-    public AcomodacaoListagemDTO criar(@RequestBody @Valid AcomodacaoCadastroDTO dados) throws CpfExistenteException, AcomodacaoExistenteException {
+    public ResponseEntity<AcomodacaoListagemDTO> criar(@RequestBody @Valid AcomodacaoCadastroDTO dados) throws CpfExistenteException, AcomodacaoExistenteException {
         var acomodacao = new Acomodacao(dados);
         service.salvar(acomodacao);
-        return new AcomodacaoListagemDTO(acomodacao);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AcomodacaoListagemDTO(acomodacao));
     }
 
     @DeleteMapping("/{id}")
-    public void excluir(@PathVariable Long id){
+    public ResponseEntity<Void> excluir(@PathVariable Long id){
         service.remover(id);
+        return ResponseEntity.noContent().build();
     }
 }

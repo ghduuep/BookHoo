@@ -7,6 +7,8 @@ import br.com.bookhoo.BookHoo.model.Usuario;
 import br.com.bookhoo.BookHoo.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,28 +21,31 @@ public class UsuarioController {
     private UsuarioService service;
 
     @GetMapping
-    public List<UsuarioListagemDTO> listarTodos() {
+    public ResponseEntity<List<UsuarioListagemDTO>> listarTodos() {
         List<Usuario> usuarios = service.listar();
-        return usuarios.stream()
+        var dtos=  usuarios.stream()
                 .map(UsuarioListagemDTO::new)
                 .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public UsuarioListagemDTO buscarPorId(@PathVariable Long id) throws Exception {
+    public ResponseEntity<UsuarioListagemDTO> buscarPorId(@PathVariable Long id) throws Exception {
         var usuario = service.buscarPorId(id).orElseThrow();
-        return new UsuarioListagemDTO(usuario);
+        var dto = new UsuarioListagemDTO(usuario);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
-    public UsuarioListagemDTO criar(@RequestBody @Valid UsuarioCadastroDTO dados) throws CpfExistenteException {
+    public ResponseEntity<UsuarioListagemDTO> criar(@RequestBody @Valid UsuarioCadastroDTO dados) throws CpfExistenteException {
         var usuario = new Usuario(dados);
         service.salvar(usuario);
-        return new UsuarioListagemDTO(usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioListagemDTO(usuario));
     }
 
     @DeleteMapping("/{id}")
-    public void excluir(@PathVariable Long id){
+    public ResponseEntity<Void> excluir(@PathVariable Long id){
         service.remover(id);
+        return ResponseEntity.noContent().build();
     }
 }

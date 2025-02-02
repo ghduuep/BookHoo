@@ -8,6 +8,8 @@ import br.com.bookhoo.BookHoo.model.Reserva;
 import br.com.bookhoo.BookHoo.service.ReservaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,28 +22,31 @@ public class ReservaController {
     private ReservaService service;
 
     @GetMapping
-    public List<ReservaListagemDTO> listarTodos() {
+    public ResponseEntity<List<ReservaListagemDTO>> listarTodos() {
         List<Reserva> reservas = service.listar();
-        return reservas.stream()
+        var dtos =  reservas.stream()
                 .map(ReservaListagemDTO::new)
                 .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
-    public ReservaListagemDTO buscarPorId(@PathVariable Long id) throws ReservaNaoEncontradaException {
+    public ResponseEntity<ReservaListagemDTO> buscarPorId(@PathVariable Long id) throws ReservaNaoEncontradaException {
         var reserva = service.buscarPorId(id).orElseThrow();
-        return new ReservaListagemDTO(reserva);
+        var dto = new ReservaListagemDTO(reserva);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
-    public ReservaListagemDTO criar(@RequestBody @Valid ReservaCadastroDTO dados) throws ReservaAtivaException, Exception {
+    public ResponseEntity<ReservaListagemDTO> criar(@RequestBody @Valid ReservaCadastroDTO dados) throws ReservaAtivaException, Exception {
         var reserva = new Reserva(dados);
         service.salvar(reserva);
-        return new ReservaListagemDTO(reserva);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ReservaListagemDTO(reserva));
     }
 
     @DeleteMapping("/{id}")
-    public void excluir(@PathVariable Long id){
+    public ResponseEntity<Void> excluir(@PathVariable Long id){
         service.remover(id);
+        return ResponseEntity.noContent().build();
     }
 }
