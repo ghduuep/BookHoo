@@ -19,9 +19,6 @@ A API **BookHoo** é uma aplicação construída em **Java** com o framework **S
 - **Jakarta EE**: Para a parte de transações e injeção de dependências.
 - **Maven**: Gerenciador de dependências e build.
 
-## Como Rodar o Projeto
-
-### Pré-requisitos
-
-1. **Java 23** instalado em sua máquina.
-2. **Maven** instalado para gerenciar dependências e build do projeto.
+## Documentação
+Você pode conferir a documentação do projeto pela URL:
+(http://localhost:8080/swagger-ui/index.html)
