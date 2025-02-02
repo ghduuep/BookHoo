@@ -1,9 +1,13 @@
 package br.com.bookhoo.BookHoo.controller;
 
+import br.com.bookhoo.BookHoo.dto.reserva.ReservaAtualizacaoDTO;
 import br.com.bookhoo.BookHoo.dto.reserva.ReservaCadastroDTO;
 import br.com.bookhoo.BookHoo.dto.reserva.ReservaListagemDTO;
+import br.com.bookhoo.BookHoo.dto.usuario.UsuarioAtualizacaoDTO;
+import br.com.bookhoo.BookHoo.dto.usuario.UsuarioListagemDTO;
 import br.com.bookhoo.BookHoo.exceptions.ReservaAtivaException;
 import br.com.bookhoo.BookHoo.exceptions.ReservaNaoEncontradaException;
+import br.com.bookhoo.BookHoo.exceptions.UsuarioNaoEncontradoException;
 import br.com.bookhoo.BookHoo.model.Reserva;
 import br.com.bookhoo.BookHoo.service.ReservaService;
 import jakarta.validation.Valid;
@@ -32,7 +36,7 @@ public class ReservaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ReservaListagemDTO> buscarPorId(@PathVariable Long id) throws ReservaNaoEncontradaException {
-        var reserva = service.buscarPorId(id).orElseThrow();
+        var reserva = service.buscarPorId(id);
         var dto = new ReservaListagemDTO(reserva);
         return ResponseEntity.ok(dto);
     }
@@ -42,6 +46,16 @@ public class ReservaController {
         var reserva = new Reserva(dados);
         service.salvar(reserva);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ReservaListagemDTO(reserva));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ReservaListagemDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ReservaAtualizacaoDTO dados){
+        try {
+            var reservaAtualizada = service.atualizar(id, dados);
+            return ResponseEntity.ok(new ReservaListagemDTO(reservaAtualizada));
+        } catch(ReservaNaoEncontradaException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
 
     @DeleteMapping("/{id}")

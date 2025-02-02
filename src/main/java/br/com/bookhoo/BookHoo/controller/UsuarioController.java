@@ -1,8 +1,10 @@
 package br.com.bookhoo.BookHoo.controller;
 
+import br.com.bookhoo.BookHoo.dto.usuario.UsuarioAtualizacaoDTO;
 import br.com.bookhoo.BookHoo.dto.usuario.UsuarioCadastroDTO;
 import br.com.bookhoo.BookHoo.dto.usuario.UsuarioListagemDTO;
 import br.com.bookhoo.BookHoo.exceptions.CpfExistenteException;
+import br.com.bookhoo.BookHoo.exceptions.UsuarioNaoEncontradoException;
 import br.com.bookhoo.BookHoo.model.Usuario;
 import br.com.bookhoo.BookHoo.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -30,8 +32,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioListagemDTO> buscarPorId(@PathVariable Long id) throws Exception {
-        var usuario = service.buscarPorId(id).orElseThrow();
+    public ResponseEntity<UsuarioListagemDTO> buscarPorId(@PathVariable Long id) throws UsuarioNaoEncontradoException {
+        var usuario = service.buscarPorId(id);
         var dto = new UsuarioListagemDTO(usuario);
         return ResponseEntity.ok(dto);
     }
@@ -41,6 +43,16 @@ public class UsuarioController {
         var usuario = new Usuario(dados);
         service.salvar(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(new UsuarioListagemDTO(usuario));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioListagemDTO> atualizar(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizacaoDTO dados) throws UsuarioNaoEncontradoException {
+        try {
+            var usuarioAtualizado = service.atualizar(id, dados);
+            return ResponseEntity.ok(new UsuarioListagemDTO(usuarioAtualizado));
+        } catch(UsuarioNaoEncontradoException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
 
     @DeleteMapping("/{id}")

@@ -1,9 +1,14 @@
 package br.com.bookhoo.BookHoo.service;
 
+import br.com.bookhoo.BookHoo.dto.acomodacao.AcomodacaoAtualizacaoDTO;
 import br.com.bookhoo.BookHoo.exceptions.AcomodacaoExistenteException;
+import br.com.bookhoo.BookHoo.exceptions.AcomodacaoNaoEncontradaException;
+import br.com.bookhoo.BookHoo.exceptions.UsuarioNaoEncontradoException;
 import br.com.bookhoo.BookHoo.model.Acomodacao;
+import br.com.bookhoo.BookHoo.model.Usuario;
 import br.com.bookhoo.BookHoo.repository.AcomodacaoRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +25,8 @@ public class AcomodacaoService {
         return repository.findAll();
     }
 
-    public Optional<Acomodacao> buscarPorId(Long id) throws Exception {
-        Optional<Acomodacao> acomodacaoExistente = repository.findById(id);
-        if (acomodacaoExistente.isEmpty()) {
-            throw new Exception("Acomodação não existente.");
-        }
-        return acomodacaoExistente;
+    public Acomodacao buscarPorId(Long id) throws AcomodacaoNaoEncontradaException {
+        return repository.findById(id).orElseThrow(() -> new AcomodacaoNaoEncontradaException("Acomodação não encontrada."));
     }
 
     @Transactional
@@ -35,6 +36,13 @@ public class AcomodacaoService {
             throw new AcomodacaoExistenteException("Acomodação na mesma localização já existente");
         }
         return repository.save(acomodacao);
+    }
+
+    @Transactional
+    public Acomodacao atualizar(Long id, AcomodacaoAtualizacaoDTO dados) throws AcomodacaoNaoEncontradaException {
+        Acomodacao acomodacao = repository.findById(id).orElseThrow(() -> new AcomodacaoNaoEncontradaException("Acomodação não encontrado."));
+        acomodacao.atualizarInformacoes(dados);
+        return acomodacao;
     }
 
     @Transactional

@@ -1,11 +1,14 @@
 package br.com.bookhoo.BookHoo.service;
 
+import br.com.bookhoo.BookHoo.dto.reserva.ReservaAtualizacaoDTO;
+import br.com.bookhoo.BookHoo.dto.usuario.UsuarioAtualizacaoDTO;
 import br.com.bookhoo.BookHoo.exceptions.ReservaAtivaException;
 import br.com.bookhoo.BookHoo.exceptions.ReservaNaoEncontradaException;
+import br.com.bookhoo.BookHoo.exceptions.UsuarioNaoEncontradoException;
 import br.com.bookhoo.BookHoo.model.Acomodacao;
 import br.com.bookhoo.BookHoo.model.Reserva;
 import br.com.bookhoo.BookHoo.model.StatusReserva;
-import br.com.bookhoo.BookHoo.repository.AcomodacaoRepository;
+import br.com.bookhoo.BookHoo.model.Usuario;
 import br.com.bookhoo.BookHoo.repository.ReservaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ReservaService {
@@ -25,12 +27,8 @@ public class ReservaService {
         return repository.findAll();
     }
 
-    public Optional<Reserva> buscarPorId(Long id) throws ReservaNaoEncontradaException {
-        Optional<Reserva> reservaExistente = repository.findById(id);
-        if (reservaExistente.isEmpty()) {
-            throw new ReservaNaoEncontradaException("Reserva não existente.");
-        }
-        return reservaExistente;
+    public Reserva buscarPorId(Long id) throws ReservaNaoEncontradaException {
+        return repository.findById(id).orElseThrow(() -> new ReservaNaoEncontradaException("Reserva não encontrada."));
     }
 
     private void validarReservaAtivaDoUsuario(Reserva reserva) throws ReservaAtivaException {
@@ -61,6 +59,13 @@ public class ReservaService {
         reserva.setValorTotal(calcularCusto(reserva));
         reserva.setStatus(StatusReserva.PENDENTE);
         return repository.save(reserva);
+    }
+
+    @Transactional
+    public Reserva atualizar(Long id, ReservaAtualizacaoDTO dados) throws ReservaNaoEncontradaException {
+        Reserva reserva = repository.findById(id).orElseThrow(() -> new ReservaNaoEncontradaException("Reserva não encontrado."));
+        reserva.atualizarInformacoes(dados);
+        return reserva;
     }
 
     @Transactional

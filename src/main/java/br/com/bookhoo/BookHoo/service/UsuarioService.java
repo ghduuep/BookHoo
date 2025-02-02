@@ -1,6 +1,8 @@
 package br.com.bookhoo.BookHoo.service;
 
+import br.com.bookhoo.BookHoo.dto.usuario.UsuarioAtualizacaoDTO;
 import br.com.bookhoo.BookHoo.exceptions.CpfExistenteException;
+import br.com.bookhoo.BookHoo.exceptions.UsuarioNaoEncontradoException;
 import br.com.bookhoo.BookHoo.model.Usuario;
 import br.com.bookhoo.BookHoo.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
@@ -20,12 +22,8 @@ public class UsuarioService {
         return repository.findAll();
     }
 
-    public Optional<Usuario> buscarPorId(Long id) throws Exception {
-        Optional<Usuario> usuarioExistente = repository.findById(id);
-        if (usuarioExistente.isEmpty()) {
-            throw new Exception("Usuario não existente");
-        }
-        return usuarioExistente;
+    public Usuario buscarPorId(Long id) throws UsuarioNaoEncontradoException {
+        return repository.findById(id).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não encontrado."));
     }
 
     @Transactional
@@ -37,6 +35,12 @@ public class UsuarioService {
         return repository.save(usuario);
     }
 
+    @Transactional
+    public Usuario atualizar(Long id, UsuarioAtualizacaoDTO dados) throws UsuarioNaoEncontradoException {
+        Usuario usuario = repository.findById(id).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado."));
+        usuario.atualizarInformacoes(dados);
+        return usuario;
+    }
     @Transactional
     public void remover(Long id) {
         repository.deleteById(id);
